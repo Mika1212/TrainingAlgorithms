@@ -1,20 +1,407 @@
-package main.java.org.example;
-
-import com.sun.source.tree.Tree;
+package org.example;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-
-
 import java.util.*;
 
-
-class Main {
+class ThirdTask {
     public static void main(String[] args) {
-        return;
+        Scanner sc = new Scanner(System.in); // создаём объект класса Scanner
+        int segmentsAmount = 0;
+        segmentsAmount = sc.nextInt();
+        int result = segmentsAmount;
+        sc.nextLine();
+        Set<Integer> metLines = new HashSet<>();
+
+        String[] arr = new String[segmentsAmount];
+        for (int i = 0; i < segmentsAmount; i++) {
+            arr[i] = sc.nextLine();
+        }
+
+        if (arr.length < 2) {
+            System.out.println(1);
+            return;
+        }
+
+        int maxNum = segmentsAmount * 2 + 2;
+        int[][] field = new int[3][maxNum];
+        for (int j = 0; j < segmentsAmount; j++) {
+            String[] startEnd = arr[j].split(" ");
+            int start = Integer.parseInt(startEnd[0]);
+            int end = Integer.parseInt(startEnd[1]);
+            int mult = start > end ? -1 : 1;
+
+            if (field[0][start] == 0) field[0][start] = j + 1;
+            else {
+                int savedNum = field[0][start];
+                while (savedNum > 0) {
+                    metLines.add(savedNum % maxNum);
+                    savedNum /= maxNum;
+                }
+                field[0][start] *= maxNum;
+                field[0][start] += j + 1;
+                metLines.add(j + 1);
+            }
+            field[0][start] = j + 1;
+            int crossed = 0;
+            for (int i = Math.min(start, end); i <= Math.max(start, end); i++) {
+                int num = field[1][i];
+                if (num != 0) {
+                    if (num > 0 && mult < 0 || num < 0 && mult > 0) {
+                        metLines.add(j + 1);
+                        int savedNum = num;
+                        while (savedNum > 0) {
+                            metLines.add(savedNum % maxNum);
+                            savedNum /= maxNum;
+                        }
+                    }
+
+                    field[1][i] *= maxNum;
+                    field[1][i] += j + 1;
+                    crossed = Math.max(crossed, field[1][i]);
+                } else {
+                    field[1][i] = j + 1;
+                    crossed = 0;
+                }
+            }
+
+            if (crossed > 0) metLines.add(j + 1);
+
+            if (field[2][end] != 0 || crossed > 0)
+            {
+                int savedNum = field[2][end];
+                while (savedNum > 0) {
+                    metLines.add(savedNum % maxNum);
+                    savedNum /= maxNum;
+                }
+                field[2][end] *= maxNum;
+                field[2][end] += j + 1;
+                metLines.add(j + 1);
+            }
+            else field[2][end] = j + 1;
+        }
+
+        result -= metLines.size();
+        System.out.println(metLines);
+
+        for (int i = 2; i >= 0 ; i--) {
+            System.out.println(Arrays.toString(field[i]));
+        }
+
+        System.out.println(result);
+    }
+
+}
+
+class SecondTask {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in); // создаём объект класса Scanner
+        int dictionaryLength = 0;
+        dictionaryLength = sc.nextInt();
+        int questionNumber = 0;
+        questionNumber = sc.nextInt();
+
+        //System.out.println("dictlen = " + dictionaryLength + "  questlen = " + questionNumber);
+
+        sc.nextLine();
+        String[] dictionary = new String[dictionaryLength];
+        int[][] alphabetPointer = new int[26][27];
+        for (int i = 0; i < dictionaryLength; i++) {
+            dictionary[i] = sc.nextLine();
+
+            int letterNumFirst = dictionary[i].charAt(0) - 97;
+            //System.out.println(letterNumFirst);
+            if (alphabetPointer[letterNumFirst][26] == 0) {
+                alphabetPointer[letterNumFirst][26] = i + 1;
+            }
+            if (dictionary[i].length() > 1) {
+                int letterNumSecond = dictionary[i].charAt(1) - 97;
+                if (alphabetPointer[letterNumFirst][letterNumSecond] == 0) {
+                    alphabetPointer[letterNumFirst][letterNumSecond] = i + 1;
+                }
+            }
+        }
+
+        //System.out.println(Arrays.toString(dictionary));
+
+        String[] questions = new String[questionNumber];
+        for (int i = 0; i < questionNumber; i++) {
+            questions[i] = sc.nextLine();
+        }
+
+        //System.out.println(Arrays.toString(questions));
+
+
+        for (String question: questions) {
+            String[] arrQuestion = question.split(" ");
+            int num = Integer.parseInt(arrQuestion[0]);
+            String line = arrQuestion[1];
+            int start = 0;
+            if (line.length() == 1) {
+                start = alphabetPointer[line.charAt(0) - 97][26] - 1;
+            } else {
+                start = alphabetPointer[line.charAt(0) - 97][line.charAt(1) - 97] - 1;
+                if (start == 0 && alphabetPointer[line.charAt(0) - 97][26] != 1) {
+                    System.out.println(-1);
+                    continue;
+                }
+            }
+            int iSaved = 0;
+            if (start < 0) start = 0;
+
+            //System.out.println(start);
+            for (int i = start; i < dictionaryLength; i++) {
+                if (dictionary[i].startsWith(line)) {
+                    iSaved = i;
+                    break;
+                }
+            }
+
+            if (iSaved + num - 1 >= dictionaryLength || !dictionary[iSaved + num - 1].startsWith(line)) {
+                System.out.println(-1);
+            } else System.out.println(start + num);
+
+        }
+
+    }
+}
+
+class FirstTask {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in); // создаём объект класса Scanner
+        String str = "";
+        str = sc.nextLine();
+
+        int length = 0;
+
+        List<String> arr = new ArrayList<>();
+        StringBuilder currWord = new StringBuilder();
+
+        for (int i = 0; i < str.length(); i++) {
+            char letter = str.charAt(i);
+            if (letter == ' ' && i != str.length() - 1 && str.charAt(i + 1) != ',') {
+                if (!currWord.toString().isEmpty()) arr.add(currWord.toString());
+                if (currWord.length() > length) length = currWord.length();
+                currWord = new StringBuilder();
+            } else if (letter == ',') {
+                if (currWord.length() > length) length = currWord.length();
+                currWord.append(",");
+                arr.add(currWord.toString());
+                currWord = new StringBuilder();
+            } else if (i == str.length() - 1) {
+                currWord.append(letter);
+                arr.add(currWord.toString());
+                if (currWord.length() > length) length = currWord.length();
+            }
+            else {
+                if (letter != ' ') currWord.append(letter);
+            }
+        }
+        //System.out.println(arr);
+        length = length * 3;
+        //System.out.println(length);
+
+        StringBuilder result = new StringBuilder();
+        boolean newLine = true;
+
+        int lineSize = 0;
+        for (String s : arr) {
+            if (lineSize + s.length() > length - 1) {
+                lineSize = 0;
+                result.append("\n");
+                newLine = true;
+            }
+            if (s.equals(",")) {
+                result.append(s);
+                newLine = false;
+            } else if (!newLine) {
+                result.append(" ").append(s);
+                lineSize++;
+            } else {
+                result.append(s);
+                newLine = false;
+            }
+            lineSize += s.length();
+        }
+
+        System.out.println(result);
+    }
+}
+
+class DreamBinaryTree {
+    static class BinaryTreeNode {
+        int value;
+        int nodeAmount;
+        BinaryTreeNode parent;
+        BinaryTreeNode leftChild;
+        BinaryTreeNode rightChild;
+
+        BinaryTreeNode(int value, BinaryTreeNode parent) {
+            this.value = value;
+            this.parent = parent;
+        }
+
+        BinaryTreeNode(int value) {
+            this.value = value;
+        }
+
+        void changeNodeAmount(int amount) {
+            this.nodeAmount = amount;
+        }
+
+        void addNode(BinaryTreeNode node) {
+            BinaryTreeNode currentNode = this;
+            while (true) {
+                if (currentNode.parent == null) {
+                    addNodeHelper(node, currentNode);
+                    break;
+                } else currentNode = currentNode.parent;
+            }
+        }
+
+        private void addNodeHelper(BinaryTreeNode node, BinaryTreeNode thisNode) {
+            if (thisNode.value * 2 == node.value) {
+                thisNode.leftChild = node;
+                node.parent = thisNode;
+            }
+            else if (thisNode.value * 2 + 1 == node.value) {
+                thisNode.rightChild = node;
+                node.parent = thisNode;
+            }
+
+            else {
+                if (thisNode.leftChild != null) addNodeHelper(node, thisNode.leftChild);
+                if (thisNode.rightChild != null) addNodeHelper(node, thisNode.rightChild);
+            }
+        }
+
+        @Override
+        public String toString() {
+            BinaryTreeNode currentNode = this;
+            while (true) {
+                if (currentNode.parent == null) {
+                    break;
+                } else currentNode = currentNode.parent;
+            }
+
+            StringBuilder result = new StringBuilder(String.valueOf(currentNode.value));
+            Set<Integer> visitedNodes = new HashSet<>(currentNode.value);
+            boolean flagParent = true;
+            int nodeAmount = currentNode.nodeAmount;
+
+            while (visitedNodes.size() != nodeAmount) {
+                int prevNodeValue = currentNode.value;
+                while (flagParent) {
+                    if (currentNode.leftChild != null) currentNode = currentNode.leftChild;
+                    else {
+                        if (prevNodeValue != currentNode.value) {
+                            result.append(currentNode.value).append(" ");
+                            visitedNodes.add(currentNode.value);
+                        }
+                        break;
+                    }
+                }
+
+                if (currentNode.rightChild != null) {
+                    currentNode = currentNode.rightChild;
+                    flagParent = true;
+                }
+                else if (currentNode.parent != null){
+                    currentNode = currentNode.parent;
+                    flagParent = false;
+                    if (!visitedNodes.contains(currentNode.value)) {
+                        result.append(currentNode.value).append(" ");
+                        visitedNodes.add(currentNode.value);
+                    }
+                }
+
+                if (currentNode.leftChild == null
+                        && currentNode.rightChild == null
+                        && !visitedNodes.contains(currentNode.value)) {
+
+                    result.append(currentNode.value).append(" ");
+                    visitedNodes.add(currentNode.value);
+                }
+            }
+
+            return result.toString();
+        }
+
+        public static void main(String[] args) {
+            Scanner sc = new Scanner(System.in); // создаём объект класса Scanner
+
+            String[] arr = new String[2];
+            for (int j = 0; j < 2; j++) {
+                arr[j] = sc.nextLine();
+            }
+
+            String[] list = arr[0].split(" ");
+            int nodeAmount = Integer.parseInt(list[0]);
+            if (nodeAmount < 1) return;
+            BinaryTreeNode root = new BinaryTreeNode(1);
+            root.changeNodeAmount(nodeAmount);
+            for (int j = 2; j < nodeAmount + 1; j++) {
+                root.addNode(new BinaryTreeNode(j));
+            }
+
+            System.out.println(root);
+
+        }
+    }
+}
+
+class BestTimeBuyAndSellWithTransactionFee {
+    public static void main(String[] args) {
+        int[] arr = new int[] { 1,3,2,8,4,9};
+        int fee = 2;
+
+        System.out.println(maxProfit(arr, fee));
+    }
+
+
+    public static int maxProfit(int[] prices, int fee) {
+        int buy = Integer.MIN_VALUE;
+        int sell = 0;
+
+        for (int price : prices) {
+            buy = Math.max(buy, sell - price);
+            sell = Math.max(sell, buy + price - fee);
+        }
+
+        return sell;
+    }
+}
+
+class BestTimeBuyAndSellTwo {
+    public static void main(String[] args) {
+        int[] arr = new int[] {1, 2, 5, 7};
+        System.out.println(maxProfit(arr));
+    }
+
+    public static int maxProfit(int[] prices) {
+        int profit = 0;
+        for(int i=1;i<prices.length;i++) {
+            if(prices[i] > prices[i-1]) {
+                profit += prices[i] - prices[i-1];
+            }
+        }
+        return profit;
+    }
+}
+
+class BestTimeBuyAndSell {
+    public int maxProfit(int[] prices) {
+        if (prices.length == 0) return 0;
+        int minValue = prices[0];
+        int bestDeal = 0;
+        for (int i = 1; i < prices.length; i++) {
+            if  (prices[i] < minValue) minValue = prices[i];
+            else bestDeal = Math.max(bestDeal, prices[i] - minValue);
+        }
+        return bestDeal;
     }
 }
 
@@ -1414,7 +1801,12 @@ class RocketTaxi {
             }
             arr[j] = str;
         }
+        if (arr.length < 2) {
+            System.out.println(0);
+            return;
+        }
         Arrays.sort(arr);
+
 
         HashMap<String, String> rocketMap = new HashMap<>();
         HashMap<String, Integer> timeRocket = new HashMap<>();
